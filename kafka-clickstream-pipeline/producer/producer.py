@@ -1,6 +1,14 @@
 import random
 import time
 from datetime import datetime
+import json
+
+from kafka import KafkaProducer
+
+producer = KafkaProducer(
+    bootstrap_servers="localhost:9092",
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+)
 
 pages = [
     "/",
@@ -10,8 +18,7 @@ pages = [
     "/login"
 ]
 
-print("Clickstream producer started")
-
+print("Sending events to Kafka...")
 while True:
     event = {
         "user_id": random.randint(1, 100),
@@ -19,6 +26,8 @@ while True:
         "timestamp": datetime.now().isoformat()
     }
 
-    print(event)
+    producer.send("clickstream", event)
+
+    print("Sent:", event)
 
     time.sleep(2)
